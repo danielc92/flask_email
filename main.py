@@ -12,7 +12,7 @@ app.config['MAIL_PASSWORD']=os.getenv('MAIL_PASSWORD','Error')
 mail = Mail(app)
 serializer = URLSafeTimedSerializer('this should be a secret')
 salt = 'spaghetti'
-max_age_seconds = 30
+max_age_seconds = 300
 #print(app.config)
 
 
@@ -20,7 +20,7 @@ max_age_seconds = 30
 def home():
     """Create Token Route."""
     if request.method == 'GET':
-        return '<form action="/" method = "POST"><input name = "email"><input type = "submit"></form>'
+        return '<h1>Enter Email: </h1><form action="/" method = "POST"><input name = "email"><br><input style = "padding:8px; margin-top:5px" type = "submit"></form>'
 
     email = request.form['email']
     token = serializer.dumps(email, salt=salt)
@@ -31,11 +31,11 @@ def home():
 
     message = Message('Confirm your email.',sender=sender,recipients=[email])
 
-    message.body = 'Click the following link to activate your account. {}'.format(full_link)
+    message.html = '<h1>Welcome to flask-email app.</h1><code>this token will expire in 5 miutes</code><p>Click the following <a href={}>link</a> to activate your account. Thank you for joining us.</p>'.format(full_link)
 
     mail.send(message)
 
-    return 'The email entered is {}. The token is {}.'.format(request.form['email'], token)
+    return '<h1>Success!</h1><p>The email is <strong>{}</strong>. The token is <strong>{}</strong>.<p>'.format(request.form['email'], token)
 
 
 @app.route('/confirm_email/<token>')
@@ -43,10 +43,10 @@ def confirm_email(token):
     """Confirm Token Route."""
     try:
         email = serializer.loads(token, salt=salt, max_age=max_age_seconds)
-        return 'The token works'
+        return '<h1>The token is valid.</h1>'
 
     except SignatureExpired:
-        return 'The token is expired'
+        return '<h1>The token has expired.</h1>'
 
 
 if '__main__'==__name__:
